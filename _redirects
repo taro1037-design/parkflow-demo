@@ -1,0 +1,9 @@
+# Intentionally empty.
+#
+# On Workers, unmatched paths are handled by `assets.not_found_handling =
+# "single-page-application"` in wrangler.toml, which serves the app shell.
+# A `/*` rule here would run BEFORE that and override it.
+#
+# If you deploy to Cloudflare Pages instead (which has no not_found_handling
+# setting), add this line back:
+#   /*  /index.html  200

@@ -1,0 +1,59 @@
+# Cloudflare response headers (Workers static assets + Pages use this format).
+# Copied to dist/ by Vite. Verified by security/checks/headers.mjs — that test
+# fails the build if any required header is missing or weakened.
+
+/*
+  # Transport. One year, subdomains included. `preload` is intentionally NOT set:
+  # it is a one-way door requiring every current and future subdomain to serve
+  # HTTPS forever. Add it only after a deliberate decision.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  # Deny every powerful feature except geolocation, which the product needs and
+  # which still requires an explicit per-visit user grant.
+  Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), midi=(), serial=(), bluetooth=(), interest-cohort=()
+  # Isolates our browsing context from cross-origin openers and blocks other
+  # origins from embedding our resources. COEP is deliberately omitted: it would
+  # block OpenStreetMap tiles, which are not served with CORP headers.
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  # style-src has NO 'unsafe-inline': verified across all 10 screens, the map,
+  # bottom sheets and toasts with zero violations (React and Leaflet set styles
+  # through CSSOM, which CSP does not govern).
+  # `require-trusted-types-for 'script'` is NOT set: it was tested and breaks
+  # Leaflet, which assigns innerHTML internally when building markers. Revisit
+  # if Leaflet gains Trusted Types support or is replaced.
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; script-src-attr 'none'; worker-src 'self'; manifest-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' https://tile.openstreetmap.org https://*.tile.openstreetmap.org; frame-src 'none'; media-src 'none'; upgrade-insecure-requests
+
+# Content-hashed filenames — safe to cache indefinitely.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Self-hosted fonts are content-hashed in their filename too.
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: same-origin
+
+/icons/*
+  Cache-Control: public, max-age=86400
+
+# The service worker must never come from a stale HTTP cache, or a new deploy
+# cannot take over from the previous worker.
+/sw.js
+  Cache-Control: no-cache
+
+/manifest.webmanifest
+  Cache-Control: public, max-age=3600
+
+/index.html
+  Cache-Control: no-cache
+
+# The invitation landing URL carries a single-use membership credential in its
+# query string (`/invite/accept?token=…`). Before the app can move it out of the
+# URL, the browser has already requested the stylesheets, scripts and manifest
+# with the FULL URL as Referer — same-origin, but into request logs. No Referer
+# at all from this document. Replaces, not appends to, the site-wide policy.
+/invite/*
+  ! Referrer-Policy
+  Referrer-Policy: no-referrer
