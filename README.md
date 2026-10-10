@@ -3,4 +3,4 @@ This is a **DEMO**, NOT A LIVE PARKING AVAILABILITY APP. All local parking data 
 
 Public release contains only the compiled frontend static files, not source/business plans/keys. Admin UI is disabled in the production build. Client-data APIs, accounts and Cloudflare Worker/D1 backend are not deployed.
 
-The authoritative private source is maintained separately in \. Security gate for demo PASSED; customer-data gate FAILS until required infrastructure exists. No payments, no ads, no data feed.
+The authoritative private source is maintained separately in the private Parkflow repository. Security gate for demo PASSED; customer-data gate FAILS until required infrastructure exists. No payments, no ads, no data feed.
